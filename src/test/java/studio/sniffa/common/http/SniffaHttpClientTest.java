@@ -1,13 +1,12 @@
 package studio.sniffa.common.http;
 
-import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import studio.sniffa.common.testing.StubHttpServer;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,25 +17,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SniffaHttpClientTest {
 
-    private HttpServer server;
+    private StubHttpServer server;
     private SniffaHttpClient client;
 
     @BeforeEach
     void startServer() throws IOException {
-        server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
-        server.start();
-        client = new SniffaHttpClient("http://127.0.0.1:" + server.getAddress().getPort(), "test-token");
+        server = StubHttpServer.start();
+        client = new SniffaHttpClient(server.baseUrl(), "test-token");
     }
 
     @AfterEach
     void stopServer() {
-        server.stop(0);
+        server.close();
     }
 
     @Test
     void getSendsBearerTokenAndReturnsBody() throws Exception {
         AtomicReference<String> receivedAuth = new AtomicReference<>();
-        server.createContext("/ping", exchange -> {
+        server.handle("/ping", exchange -> {
             receivedAuth.set(exchange.getRequestHeaders().getFirst("Authorization"));
             byte[] body = "pong".getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, body.length);
@@ -53,9 +51,22 @@ class SniffaHttpClientTest {
     }
 
     @Test
+    void getSendsCorrelationIdHeader() throws Exception {
+        AtomicReference<String> receivedCorrelationId = new AtomicReference<>();
+        server.handle("/ping", exchange -> {
+            receivedCorrelationId.set(exchange.getRequestHeaders().getFirst("X-Correlation-Id"));
+            exchange.sendResponseHeaders(200, -1);
+        });
+
+        client.get("/ping");
+
+        assertTrue(receivedCorrelationId.get() != null && !receivedCorrelationId.get().isBlank());
+    }
+
+    @Test
     void postSendsJsonBody() throws Exception {
         AtomicReference<String> receivedBody = new AtomicReference<>();
-        server.createContext("/echo", exchange -> {
+        server.handle("/echo", exchange -> {
             receivedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             exchange.sendResponseHeaders(200, -1);
         });
@@ -67,9 +78,7 @@ class SniffaHttpClientTest {
 
     @Test
     void ensureSuccessThrowsOnNon2xx() throws Exception {
-        server.createContext("/fail", exchange -> {
-            exchange.sendResponseHeaders(500, -1);
-        });
+        server.respond("/fail", 500, "");
 
         HttpResponse<String> response = client.get("/fail");
 

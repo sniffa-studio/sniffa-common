@@ -21,6 +21,8 @@ val protobufVersion = "4.31.1"
 
 dependencies {
     api("com.fasterxml.jackson.core:jackson-databind:2.18.2")
+    // Instant/Duration/... support for the shared ObjectMapper in studio.sniffa.common.json.Json.
+    api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2")
 
     // api(...): the generated gRPC stub/message types are part of this library's public surface -
     // consumers (sniffa-backend, sniffa-discord) reference them directly (EventInfo, Winner, ...).

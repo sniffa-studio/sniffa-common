@@ -3,6 +3,9 @@ package studio.sniffa.common.http;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import studio.sniffa.common.json.Json;
+import studio.sniffa.common.logging.CorrelationContext;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,7 +23,7 @@ public final class SniffaHttpClient {
     private final String baseUrl;
     private final String bearerToken;
     private final HttpClient http;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = Json.mapper();
 
     public SniffaHttpClient(String baseUrl, String bearerToken) {
         this.baseUrl = baseUrl;
@@ -65,6 +68,7 @@ public final class SniffaHttpClient {
         return HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + path))
                 .header("Authorization", "Bearer " + bearerToken)
+                .header(CorrelationContext.headerName(), CorrelationContext.current())
                 .timeout(Duration.ofSeconds(10));
     }
 
