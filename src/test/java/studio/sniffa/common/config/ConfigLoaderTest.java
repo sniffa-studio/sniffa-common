@@ -78,6 +78,25 @@ class ConfigLoaderTest {
     }
 
     @Test
+    void requireAllReturnsAllValuesWhenPresent(@TempDir Path tempDir) throws IOException {
+        Path file = writeProperties(tempDir, "A=1\nB=2");
+        ConfigLoader config = ConfigLoader.fromFile(file.toString());
+
+        assertEquals(java.util.Map.of("A", "1", "B", "2"), config.requireAll("A", "B"));
+    }
+
+    @Test
+    void requireAllCollectsEveryMissingKeyInOneException(@TempDir Path tempDir) throws IOException {
+        Path file = writeProperties(tempDir, "PRESENT=ok");
+        ConfigLoader config = ConfigLoader.fromFile(file.toString());
+
+        ConfigValidationException exception = assertThrows(ConfigValidationException.class,
+                () -> config.requireAll("PRESENT", "MISSING_A", "MISSING_B"));
+
+        assertEquals(2, exception.problems().size());
+    }
+
+    @Test
     void missingPropertiesFileDoesNotThrow(@TempDir Path tempDir) {
         ConfigLoader config = ConfigLoader.fromFile(tempDir.resolve("does-not-exist.properties").toString());
 

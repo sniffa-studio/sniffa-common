@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -41,6 +45,29 @@ public final class ConfigLoader {
                     + "'. Set it in the properties file or as an environment variable.");
         }
         return value;
+    }
+
+    /**
+     * Like {@link #require}, but for several keys at once: collects every missing key into a
+     * single {@link ConfigValidationException} instead of throwing on the first one - so a
+     * misconfigured deployment reports everything wrong with it in one boot attempt, not one key
+     * per restart.
+     */
+    public Map<String, String> requireAll(String... keys) {
+        Map<String, String> values = new LinkedHashMap<>();
+        List<String> problems = new ArrayList<>();
+        for (String key : keys) {
+            String value = rawValue(key);
+            if (value == null || value.isBlank()) {
+                problems.add("Missing required config value '" + key + "'");
+            } else {
+                values.put(key, value);
+            }
+        }
+        if (!problems.isEmpty()) {
+            throw new ConfigValidationException(problems);
+        }
+        return values;
     }
 
     public String optional(String key, String fallback) {
