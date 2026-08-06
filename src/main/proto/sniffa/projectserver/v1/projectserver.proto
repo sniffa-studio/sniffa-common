@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package sniffa.projectserver.v1;
+
+option java_multiple_files = true;
+option java_package = "studio.sniffa.common.projectserver.grpc.v1";
+option java_outer_classname = "ProjectServerProto";
+
+// Consumed by sniffa-node-agent: what should be running on this node, and reporting back what
+// actually happened. Reconciliation-loop shape - see sniffa-docs'
+// project-server-orchestrator-design.md for the full picture.
+service ProjectAgentService {
+  rpc DiscoverServers (DiscoverServersRequest) returns (DiscoverServersResponse);
+  rpc ReportStatus (ReportStatusRequest) returns (ReportStatusResponse);
+}
+
+// Consumed by sniffa-proxy (Velocity plugin): which servers exist to register dynamically, and
+// who's allowed onto a given client project's server.
+service ProjectProxyService {
+  rpc ListServers (ListServersRequest) returns (ListServersResponse);
+  rpc GetAccess (GetAccessRequest) returns (GetAccessResponse);
+}
+
+enum DesiredState {
+  DESIRED_STATE_UNSPECIFIED = 0;
+  DESIRED_STATE_RUNNING = 1;
+  DESIRED_STATE_STOPPED = 2;
+}
+
+enum ServerState {
+  SERVER_STATE_UNSPECIFIED = 0;
+  SERVER_STATE_RUNNING = 1;
+  SERVER_STATE_STOPPED = 2;
+  SERVER_STATE_FAILED = 3;
+}
+
+message DiscoverServersRequest {
+  string node_id = 1;
+}
+
+message ProjectServer {
+  string id = 1;
+  string client_project_id = 2;
+  string image = 3;
+  DesiredState desired_state = 4;
+  int32 port = 5;
+  string container_name = 6;
+}
+
+message DiscoverServersResponse {
+  repeated ProjectServer servers = 1;
+}
+
+message ReportStatusRequest {
+  string server_id = 1;
+  ServerState state = 2;
+  string message = 3;
+}
+
+message ReportStatusResponse {
+}
+
+message ListServersRequest {
+}
+
+message ProxyServer {
+  string id = 1;
+  string name = 2;
+  string host = 3;
+  int32 port = 4;
+  ServerState state = 5;
+}
+
+message ListServersResponse {
+  repeated ProxyServer servers = 1;
+}
+
+message GetAccessRequest {
+  string client_project_id = 1;
+}
+
+message GetAccessResponse {
+  repeated int64 discord_user_ids = 1;
+}
