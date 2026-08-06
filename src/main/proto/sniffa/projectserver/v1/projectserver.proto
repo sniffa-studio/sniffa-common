@@ -69,6 +69,9 @@ message ProxyServer {
   string host = 3;
   int32 port = 4;
   ServerState state = 5;
+  // Needed by sniffa-proxy's AccessGate to look up who's allowed on this specific server via
+  // GetAccess - empty for the lobby, which has no access restriction.
+  string client_project_id = 6;
 }
 
 message ListServersResponse {
@@ -79,6 +82,11 @@ message GetAccessRequest {
   string client_project_id = 1;
 }
 
+// Minecraft usernames, not Discord IDs: Velocity only ever sees a connecting player's Minecraft
+// identity, never their Discord account, so that's what actually needs to be checkable at the
+// proxy - same "resolve to IGN before enforcement" pattern marguhl-gameshow's whitelist sync
+// already uses. discordUserId still exists on ProjectAccessEntry server-side (that's who staff
+// granted access to), it's just not what this RPC needs to hand back.
 message GetAccessResponse {
-  repeated int64 discord_user_ids = 1;
+  repeated string mc_usernames = 1;
 }
