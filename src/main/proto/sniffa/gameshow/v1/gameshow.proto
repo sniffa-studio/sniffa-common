@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package sniffa.gameshow.v1;
+
+option java_multiple_files = true;
+option java_package = "studio.sniffa.common.gameshow.grpc.v1";
+option java_outer_classname = "GameshowProto";
+
+// Mirrors sniffa-backend's REST gameshow API 1:1 - see ApiRoutes.java. Same domain, second
+// transport; both call the same EventRepository/EntryRepository on the server side.
+service GameshowService {
+  rpc CreateEvent (CreateEventRequest) returns (EventInfo);
+  rpc FindActiveEvent (FindActiveEventRequest) returns (EventInfo);
+  rpc SubmitEntry (SubmitEntryRequest) returns (SubmitEntryResponse);
+  rpc Draw (DrawRequest) returns (DrawResponse);
+  rpc ListEntries (ListEntriesRequest) returns (ListEntriesResponse);
+}
+
+message CreateEventRequest {
+  string title = 1;
+  string description = 2;
+  int64 guild_id = 3;
+  int64 channel_id = 4;
+}
+
+message FindActiveEventRequest {
+  int64 channel_id = 1;
+}
+
+message EventInfo {
+  string event_id = 1;
+  string title = 2;
+  string description = 3;
+}
+
+message SubmitEntryRequest {
+  string event_id = 1;
+  int64 discord_user_id = 2;
+  string discord_tag = 3;
+  string ign_username = 4;
+  string discord_name_typed = 5;
+}
+
+enum EntryOutcomeStatus {
+  ENTRY_OUTCOME_STATUS_UNSPECIFIED = 0;
+  ENTRY_OUTCOME_STATUS_CREATED = 1;
+  ENTRY_OUTCOME_STATUS_ALREADY_JOINED = 2;
+}
+
+message SubmitEntryResponse {
+  EntryOutcomeStatus status = 1;
+}
+
+message DrawRequest {
+  string event_id = 1;
+  int32 count = 2;
+}
+
+message Winner {
+  int64 discord_user_id = 1;
+  string discord_tag = 2;
+  string ign_username = 3;
+}
+
+message DrawResponse {
+  repeated Winner winners = 1;
+}
+
+message ListEntriesRequest {
+  string event_id = 1;
+}
+
+message Entry {
+  string id = 1;
+  int64 discord_user_id = 2;
+  string discord_tag = 3;
+  string ign_username = 4;
+  string discord_name_typed = 5;
+  bool drawn = 6;
+}
+
+message ListEntriesResponse {
+  repeated Entry entries = 1;
+}
