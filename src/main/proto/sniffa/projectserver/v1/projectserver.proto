@@ -12,6 +12,16 @@ option java_outer_classname = "ProjectServerProto";
 service ProjectAgentService {
   rpc DiscoverServers (DiscoverServersRequest) returns (DiscoverServersResponse);
   rpc ReportStatus (ReportStatusRequest) returns (ReportStatusResponse);
+  // "I'm alive, here's how many servers I'm running" - lets the dashboard show real node status
+  // instead of a free-text field nobody can verify. Called every tick, same cadence as
+  // DiscoverServers.
+  rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+  // The dashboard never talks to a node-agent directly (it may not be reachable from the
+  // backend's network) - it enqueues an AgentCommand on sniffa-backend, the agent polls for its
+  // own node's pending commands on the same cadence as DiscoverServers and reports the result
+  // back via CompleteCommand. Same "poll, don't get pushed to" shape as the rest of this service.
+  rpc ListPendingCommands (ListPendingCommandsRequest) returns (ListPendingCommandsResponse);
+  rpc CompleteCommand (CompleteCommandRequest) returns (CompleteCommandResponse);
 }
 
 // Consumed by sniffa-proxy (Velocity plugin): which servers exist to register dynamically, and
@@ -32,6 +42,16 @@ enum ServerState {
   SERVER_STATE_RUNNING = 1;
   SERVER_STATE_STOPPED = 2;
   SERVER_STATE_FAILED = 3;
+}
+
+enum AgentCommandType {
+  AGENT_COMMAND_TYPE_UNSPECIFIED = 0;
+  // `docker logs --tail N <container>` - the last chunk of console output.
+  AGENT_COMMAND_TYPE_CONSOLE_TAIL = 1;
+  // Arbitrary RCON command, e.g. "say hi" or "whitelist add Notch" - see command_text.
+  AGENT_COMMAND_TYPE_EXECUTE = 2;
+  // `docker stats --no-stream` plus an RCON "list" for player count.
+  AGENT_COMMAND_TYPE_STATS = 3;
 }
 
 message DiscoverServersRequest {
@@ -88,6 +108,50 @@ message ProxyServer {
 
 message ListServersResponse {
   repeated ProxyServer servers = 1;
+}
+
+message HeartbeatRequest {
+  string node_id = 1;
+  int32 server_count = 2;
+}
+
+message HeartbeatResponse {
+}
+
+message ListPendingCommandsRequest {
+  string node_id = 1;
+}
+
+message AgentCommand {
+  string id = 1;
+  string server_id = 2;
+  AgentCommandType type = 3;
+  // Only set for AGENT_COMMAND_TYPE_EXECUTE - the RCON command text to send.
+  string command_text = 4;
+}
+
+message ListPendingCommandsResponse {
+  repeated AgentCommand commands = 1;
+}
+
+message ServerStats {
+  double cpu_percent = 1;
+  int64 memory_used_mb = 2;
+  int64 memory_limit_mb = 3;
+  int32 players_online = 4;
+  int32 players_max = 5;
+}
+
+message CompleteCommandRequest {
+  string command_id = 1;
+  bool success = 2;
+  // Console lines or RCON response text - set for CONSOLE_TAIL/EXECUTE, empty for STATS (see stats below).
+  string result = 3;
+  // Only set for AGENT_COMMAND_TYPE_STATS.
+  ServerStats stats = 4;
+}
+
+message CompleteCommandResponse {
 }
 
 message GetAccessRequest {
