@@ -29,14 +29,14 @@ public final class GameshowApiClient implements GameshowClient {
                 .put("guildId", guildId)
                 .put("channelId", channelId);
 
-        HttpResponse<String> response = http.post("/api/events", body);
+        HttpResponse<String> response = http.post("/api/v1/events", body);
         SniffaHttpClient.ensureSuccess(response);
         return http.readValue(response, EventInfo.class);
     }
 
     @Override
     public Optional<EventInfo> findActiveEvent(long channelId) throws IOException, InterruptedException {
-        HttpResponse<String> response = http.get("/api/events/active?channelId=" + channelId);
+        HttpResponse<String> response = http.get("/api/v1/events/active?channelId=" + channelId);
         if (response.statusCode() == 404) {
             return Optional.empty();
         }
@@ -53,7 +53,7 @@ public final class GameshowApiClient implements GameshowClient {
                 .put("ignUsername", ignUsername)
                 .put("discordNameTyped", discordNameTyped);
 
-        HttpResponse<String> response = http.post("/api/events/" + eventId + "/entries", body);
+        HttpResponse<String> response = http.post("/api/v1/events/" + eventId + "/entries", body);
         if (response.statusCode() == 409) {
             return new EntryOutcome.AlreadyJoined();
         }
@@ -66,7 +66,7 @@ public final class GameshowApiClient implements GameshowClient {
     @Override
     public List<Winner> draw(String eventId, int count) throws IOException, InterruptedException {
         var body = http.newObject().put("count", count);
-        HttpResponse<String> response = http.post("/api/events/" + eventId + "/draw", body);
+        HttpResponse<String> response = http.post("/api/v1/events/" + eventId + "/draw", body);
         SniffaHttpClient.ensureSuccess(response);
         return http.readValue(response, DrawResponse.class).winners();
     }
@@ -74,21 +74,21 @@ public final class GameshowApiClient implements GameshowClient {
     /** Full entry list including {@code drawn} status — used to sync new winners into a plugin. */
     @Override
     public List<Entry> listEntries(String eventId) throws IOException, InterruptedException {
-        HttpResponse<String> response = http.get("/api/events/" + eventId + "/entries");
+        HttpResponse<String> response = http.get("/api/v1/events/" + eventId + "/entries");
         SniffaHttpClient.ensureSuccess(response);
         return http.readValue(response, EntriesResponse.class).entries();
     }
 
     @Override
     public List<PendingPanelEvent> listPendingPanelEvents() throws IOException, InterruptedException {
-        HttpResponse<String> response = http.get("/api/events/pending-panel");
+        HttpResponse<String> response = http.get("/api/v1/events/pending-panel");
         SniffaHttpClient.ensureSuccess(response);
         return http.readValue(response, PendingPanelEventsResponse.class).events();
     }
 
     @Override
     public void markPanelPosted(String eventId) throws IOException, InterruptedException {
-        HttpResponse<String> response = http.post("/api/events/" + eventId + "/panel-posted", http.newObject());
+        HttpResponse<String> response = http.post("/api/v1/events/" + eventId + "/panel-posted", http.newObject());
         SniffaHttpClient.ensureSuccess(response);
     }
 

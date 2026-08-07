@@ -33,7 +33,7 @@ class GameshowApiClientTest {
 
     @Test
     void createEventParsesResponse() throws Exception {
-        server.respond("/api/events", 200, """
+        server.respond("/api/v1/events", 200, """
                 {"eventId":"evt1","title":"Show","description":"desc"}""");
 
         EventInfo event = client.createEvent("Show", "desc", 1, 2);
@@ -44,7 +44,7 @@ class GameshowApiClientTest {
 
     @Test
     void findActiveEventReturnsEmptyOn404() throws Exception {
-        server.respond("/api/events/active", 404, "");
+        server.respond("/api/v1/events/active", 404, "");
 
         Optional<EventInfo> event = client.findActiveEvent(42);
 
@@ -53,7 +53,7 @@ class GameshowApiClientTest {
 
     @Test
     void submitEntryReturnsAlreadyJoinedOn409() throws Exception {
-        server.respond("/api/events/evt1/entries", 409, "");
+        server.respond("/api/v1/events/evt1/entries", 409, "");
 
         EntryOutcome outcome = client.submitEntry("evt1", 1, "tag#1", "ign", "name");
 
@@ -62,7 +62,7 @@ class GameshowApiClientTest {
 
     @Test
     void drawReturnsWinners() throws Exception {
-        server.respond("/api/events/evt1/draw", 200, """
+        server.respond("/api/v1/events/evt1/draw", 200, """
                 {"winners":[{"discordUserId":123,"discordTag":"tag#1","ignUsername":"ign"}]}""");
 
         List<Winner> winners = client.draw("evt1", 1);
@@ -73,7 +73,7 @@ class GameshowApiClientTest {
 
     @Test
     void listEntriesParsesDrawnStatus() throws Exception {
-        server.respond("/api/events/evt1/entries", 200, """
+        server.respond("/api/v1/events/evt1/entries", 200, """
                 {"entries":[{"id":"e1","discordUserId":1,"discordTag":"t","ignUsername":"i","discordNameTyped":"d","drawn":true}]}""");
 
         List<Entry> entries = client.listEntries("evt1");
@@ -84,7 +84,7 @@ class GameshowApiClientTest {
 
     @Test
     void listEntriesHandlesEmptyList() throws Exception {
-        server.respond("/api/events/evt1/entries", 200, """
+        server.respond("/api/v1/events/evt1/entries", 200, """
                 {"entries":[]}""");
 
         assertTrue(client.listEntries("evt1").isEmpty());
@@ -92,7 +92,7 @@ class GameshowApiClientTest {
 
     @Test
     void listPendingPanelEventsParsesResponse() throws Exception {
-        server.respond("/api/events/pending-panel", 200, """
+        server.respond("/api/v1/events/pending-panel", 200, """
                 {"events":[{"eventId":"evt1","title":"Show","description":"desc","guildId":1,"channelId":2}]}""");
 
         List<PendingPanelEvent> events = client.listPendingPanelEvents();
@@ -104,7 +104,7 @@ class GameshowApiClientTest {
 
     @Test
     void markPanelPostedSendsRequest() throws Exception {
-        server.respond("/api/events/evt1/panel-posted", 204, "");
+        server.respond("/api/v1/events/evt1/panel-posted", 204, "");
 
         client.markPanelPosted("evt1");
     }
