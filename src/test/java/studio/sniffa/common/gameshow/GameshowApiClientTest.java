@@ -89,4 +89,23 @@ class GameshowApiClientTest {
 
         assertTrue(client.listEntries("evt1").isEmpty());
     }
+
+    @Test
+    void listPendingPanelEventsParsesResponse() throws Exception {
+        server.respond("/api/events/pending-panel", 200, """
+                {"events":[{"eventId":"evt1","title":"Show","description":"desc","guildId":1,"channelId":2}]}""");
+
+        List<PendingPanelEvent> events = client.listPendingPanelEvents();
+
+        assertEquals(1, events.size());
+        assertEquals("evt1", events.get(0).eventId());
+        assertEquals(2L, events.get(0).channelId());
+    }
+
+    @Test
+    void markPanelPostedSendsRequest() throws Exception {
+        server.respond("/api/events/evt1/panel-posted", 204, "");
+
+        client.markPanelPosted("evt1");
+    }
 }

@@ -79,9 +79,25 @@ public final class GameshowApiClient implements GameshowClient {
         return http.readValue(response, EntriesResponse.class).entries();
     }
 
+    @Override
+    public List<PendingPanelEvent> listPendingPanelEvents() throws IOException, InterruptedException {
+        HttpResponse<String> response = http.get("/api/events/pending-panel");
+        SniffaHttpClient.ensureSuccess(response);
+        return http.readValue(response, PendingPanelEventsResponse.class).events();
+    }
+
+    @Override
+    public void markPanelPosted(String eventId) throws IOException, InterruptedException {
+        HttpResponse<String> response = http.post("/api/events/" + eventId + "/panel-posted", http.newObject());
+        SniffaHttpClient.ensureSuccess(response);
+    }
+
     private record DrawResponse(List<Winner> winners) {
     }
 
     private record EntriesResponse(List<Entry> entries) {
+    }
+
+    private record PendingPanelEventsResponse(List<PendingPanelEvent> events) {
     }
 }

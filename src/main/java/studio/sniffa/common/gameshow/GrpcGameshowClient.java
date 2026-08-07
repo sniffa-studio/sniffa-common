@@ -11,6 +11,9 @@ import studio.sniffa.common.gameshow.grpc.v1.FindActiveEventRequest;
 import studio.sniffa.common.gameshow.grpc.v1.GameshowServiceGrpc;
 import studio.sniffa.common.gameshow.grpc.v1.ListEntriesRequest;
 import studio.sniffa.common.gameshow.grpc.v1.ListEntriesResponse;
+import studio.sniffa.common.gameshow.grpc.v1.ListPendingPanelEventsRequest;
+import studio.sniffa.common.gameshow.grpc.v1.ListPendingPanelEventsResponse;
+import studio.sniffa.common.gameshow.grpc.v1.MarkPanelPostedRequest;
 import studio.sniffa.common.gameshow.grpc.v1.SubmitEntryRequest;
 import studio.sniffa.common.gameshow.grpc.v1.SubmitEntryResponse;
 
@@ -105,6 +108,22 @@ public final class GrpcGameshowClient implements GameshowClient, AutoCloseable {
                 .map(e -> new Entry(e.getId(), e.getDiscordUserId(), e.getDiscordTag(),
                         e.getIgnUsername(), e.getDiscordNameTyped(), e.getDrawn()))
                 .toList();
+    }
+
+    @Override
+    public List<PendingPanelEvent> listPendingPanelEvents() throws IOException {
+        ListPendingPanelEventsResponse response = call(() ->
+                stub.listPendingPanelEvents(ListPendingPanelEventsRequest.getDefaultInstance()));
+        return response.getEventsList().stream()
+                .map(e -> new PendingPanelEvent(e.getEventId(), e.getTitle(), e.getDescription(),
+                        e.getGuildId(), e.getChannelId()))
+                .toList();
+    }
+
+    @Override
+    public void markPanelPosted(String eventId) throws IOException {
+        MarkPanelPostedRequest request = MarkPanelPostedRequest.newBuilder().setEventId(eventId).build();
+        call(() -> stub.markPanelPosted(request));
     }
 
     @Override

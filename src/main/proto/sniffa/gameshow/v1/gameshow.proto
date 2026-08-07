@@ -14,6 +14,12 @@ service GameshowService {
   rpc SubmitEntry (SubmitEntryRequest) returns (SubmitEntryResponse);
   rpc Draw (DrawRequest) returns (DrawResponse);
   rpc ListEntries (ListEntriesRequest) returns (ListEntriesResponse);
+  // Events created via sniffa-dashboard (not the bot's /gameshow-panel command) have nobody to
+  // post their Discord join-button panel - the bot polls this to find and post them, then calls
+  // MarkPanelPosted so it's not posted twice. Events created via CreateEvent from the bot itself
+  // are marked posted immediately, since the bot posts the panel synchronously in that flow.
+  rpc ListPendingPanelEvents (ListPendingPanelEventsRequest) returns (ListPendingPanelEventsResponse);
+  rpc MarkPanelPosted (MarkPanelPostedRequest) returns (MarkPanelPostedResponse);
 }
 
 message CreateEventRequest {
@@ -81,4 +87,26 @@ message Entry {
 
 message ListEntriesResponse {
   repeated Entry entries = 1;
+}
+
+message ListPendingPanelEventsRequest {
+}
+
+message PendingPanelEvent {
+  string event_id = 1;
+  string title = 2;
+  string description = 3;
+  int64 guild_id = 4;
+  int64 channel_id = 5;
+}
+
+message ListPendingPanelEventsResponse {
+  repeated PendingPanelEvent events = 1;
+}
+
+message MarkPanelPostedRequest {
+  string event_id = 1;
+}
+
+message MarkPanelPostedResponse {
 }

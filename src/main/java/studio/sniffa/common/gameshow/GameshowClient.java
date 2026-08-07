@@ -23,4 +23,10 @@ public interface GameshowClient {
     List<Winner> draw(String eventId, int count) throws IOException, InterruptedException;
 
     List<Entry> listEntries(String eventId) throws IOException, InterruptedException;
+
+    /** Events (created via sniffa-dashboard) that have no Discord panel posted yet. */
+    List<PendingPanelEvent> listPendingPanelEvents() throws IOException, InterruptedException;
+
+    /** Called after actually posting an event's panel, so it isn't picked up again by {@link #listPendingPanelEvents}. */
+    void markPanelPosted(String eventId) throws IOException, InterruptedException;
 }
