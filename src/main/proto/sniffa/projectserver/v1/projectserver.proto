@@ -45,6 +45,11 @@ message ProjectServer {
   DesiredState desired_state = 4;
   int32 port = 5;
   string container_name = 6;
+  // RCON, for a graceful drain (warning + wait) before the agent stops the container instead of
+  // killing it outright. 0/empty means RCON isn't configured for this server - the agent falls
+  // back to an immediate stop, same as before this field existed.
+  int32 rcon_port = 7;
+  string rcon_password = 8;
 }
 
 message DiscoverServersResponse {
