@@ -50,6 +50,13 @@ message ProjectServer {
   // back to an immediate stop, same as before this field existed.
   int32 rcon_port = 7;
   string rcon_password = 8;
+  // itzg/docker-minecraft-server's TYPE env value (e.g. "PAPER", "VANILLA") for game servers, or
+  // itzg/mc-proxy's TYPE value (e.g. "VELOCITY") for proxies - see ProjectServer.SoftwareType in
+  // sniffa-backend, the source of truth for the enum/image mapping. The agent just sets env vars,
+  // it never decides which image or type a server runs.
+  string server_type = 9;
+  string version = 10;
+  bool proxy = 11;
 }
 
 message DiscoverServersResponse {
