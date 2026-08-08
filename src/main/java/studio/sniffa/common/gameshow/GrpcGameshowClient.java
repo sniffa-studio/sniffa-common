@@ -103,12 +103,19 @@ public final class GrpcGameshowClient implements GameshowClient, AutoCloseable {
     }
 
     @Override
-    public List<Winner> draw(String eventId, int count, boolean dryRun) throws IOException {
-        DrawRequest request = DrawRequest.newBuilder()
+    public List<Winner> draw(String eventId, int count, boolean dryRun, Long guaranteedDiscordUserId, Integer guaranteedPosition)
+            throws IOException {
+        DrawRequest.Builder builder = DrawRequest.newBuilder()
                 .setEventId(eventId)
                 .setCount(count)
-                .setDryRun(dryRun)
-                .build();
+                .setDryRun(dryRun);
+        if (guaranteedDiscordUserId != null) {
+            builder.setGuaranteedDiscordUserId(guaranteedDiscordUserId);
+        }
+        if (guaranteedPosition != null) {
+            builder.setGuaranteedPosition(guaranteedPosition);
+        }
+        DrawRequest request = builder.build();
         DrawResponse response = call(() -> stub.draw(request));
         return response.getWinnersList().stream()
                 .map(w -> new Winner(w.getDiscordUserId(), w.getDiscordTag(), w.getIgnUsername()))

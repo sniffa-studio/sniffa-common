@@ -74,8 +74,15 @@ public final class GameshowApiClient implements GameshowClient {
     }
 
     @Override
-    public List<Winner> draw(String eventId, int count, boolean dryRun) throws IOException, InterruptedException {
+    public List<Winner> draw(String eventId, int count, boolean dryRun, Long guaranteedDiscordUserId, Integer guaranteedPosition)
+            throws IOException, InterruptedException {
         var body = http.newObject().put("count", count).put("dryRun", dryRun);
+        if (guaranteedDiscordUserId != null) {
+            body.put("guaranteedDiscordUserId", guaranteedDiscordUserId);
+        }
+        if (guaranteedPosition != null) {
+            body.put("guaranteedPosition", guaranteedPosition);
+        }
         HttpResponse<String> response = http.post("/api/v1/events/" + eventId + "/draw", body);
         SniffaHttpClient.ensureSuccess(response);
         return http.readValue(response, DrawResponse.class).winners();

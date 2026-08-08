@@ -70,6 +70,11 @@ message DrawRequest {
   // If true, samples winners without marking entries drawn or removing them from the pool - for
   // staff to test the draw flow/format against real entries without it counting for real.
   bool dry_run = 3;
+  // If set, this entrant is placed at guaranteed_position (1-based) instead of being randomly
+  // sampled - e.g. a content creator staff wants at a specific spot. Must be given together with
+  // guaranteed_position, and that entrant must already have an undrawn entry for the event.
+  optional int64 guaranteed_discord_user_id = 4;
+  optional int32 guaranteed_position = 5;
 }
 
 message Winner {
