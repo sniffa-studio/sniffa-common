@@ -45,6 +45,16 @@ public final class GameshowApiClient implements GameshowClient {
     }
 
     @Override
+    public Optional<EventInfo> findActiveEventInGuild(long guildId) throws IOException, InterruptedException {
+        HttpResponse<String> response = http.get("/api/v1/events/active-in-guild?guildId=" + guildId);
+        if (response.statusCode() == 404) {
+            return Optional.empty();
+        }
+        SniffaHttpClient.ensureSuccess(response);
+        return Optional.of(http.readValue(response, EventInfo.class));
+    }
+
+    @Override
     public EntryOutcome submitEntry(String eventId, long discordUserId, String discordTag,
                                      String ignUsername, String discordNameTyped) throws IOException, InterruptedException {
         var body = http.newObject()

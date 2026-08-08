@@ -17,6 +17,9 @@ public interface GameshowClient {
 
     Optional<EventInfo> findActiveEvent(long channelId) throws IOException, InterruptedException;
 
+    /** Same lookup, but by guild instead of channel - see {@code /gameshow-draw-test}. */
+    Optional<EventInfo> findActiveEventInGuild(long guildId) throws IOException, InterruptedException;
+
     EntryOutcome submitEntry(String eventId, long discordUserId, String discordTag,
                               String ignUsername, String discordNameTyped) throws IOException, InterruptedException;
 

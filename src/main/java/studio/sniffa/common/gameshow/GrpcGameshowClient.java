@@ -7,6 +7,7 @@ import io.grpc.StatusRuntimeException;
 import studio.sniffa.common.gameshow.grpc.v1.CreateEventRequest;
 import studio.sniffa.common.gameshow.grpc.v1.DrawRequest;
 import studio.sniffa.common.gameshow.grpc.v1.DrawResponse;
+import studio.sniffa.common.gameshow.grpc.v1.FindActiveEventInGuildRequest;
 import studio.sniffa.common.gameshow.grpc.v1.FindActiveEventRequest;
 import studio.sniffa.common.gameshow.grpc.v1.GameshowServiceGrpc;
 import studio.sniffa.common.gameshow.grpc.v1.ListEntriesRequest;
@@ -60,6 +61,21 @@ public final class GrpcGameshowClient implements GameshowClient, AutoCloseable {
                 .build();
         try {
             return Optional.of(toDomain(stub.findActiveEvent(request)));
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
+                return Optional.empty();
+            }
+            throw asIoException(e);
+        }
+    }
+
+    @Override
+    public Optional<EventInfo> findActiveEventInGuild(long guildId) throws IOException {
+        FindActiveEventInGuildRequest request = FindActiveEventInGuildRequest.newBuilder()
+                .setGuildId(guildId)
+                .build();
+        try {
+            return Optional.of(toDomain(stub.findActiveEventInGuild(request)));
         } catch (StatusRuntimeException e) {
             if (e.getStatus().getCode() == Status.Code.NOT_FOUND) {
                 return Optional.empty();

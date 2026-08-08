@@ -11,6 +11,9 @@ option java_outer_classname = "GameshowProto";
 service GameshowService {
   rpc CreateEvent (CreateEventRequest) returns (EventInfo);
   rpc FindActiveEvent (FindActiveEventRequest) returns (EventInfo);
+  // Same lookup, but by guild instead of channel - lets /gameshow-draw-test run from a channel
+  // other than the one the real panel is posted in.
+  rpc FindActiveEventInGuild (FindActiveEventInGuildRequest) returns (EventInfo);
   rpc SubmitEntry (SubmitEntryRequest) returns (SubmitEntryResponse);
   rpc Draw (DrawRequest) returns (DrawResponse);
   rpc ListEntries (ListEntriesRequest) returns (ListEntriesResponse);
@@ -31,6 +34,10 @@ message CreateEventRequest {
 
 message FindActiveEventRequest {
   int64 channel_id = 1;
+}
+
+message FindActiveEventInGuildRequest {
+  int64 guild_id = 1;
 }
 
 message EventInfo {
