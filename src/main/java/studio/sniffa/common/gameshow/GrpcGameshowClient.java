@@ -87,10 +87,11 @@ public final class GrpcGameshowClient implements GameshowClient, AutoCloseable {
     }
 
     @Override
-    public List<Winner> draw(String eventId, int count) throws IOException {
+    public List<Winner> draw(String eventId, int count, boolean dryRun) throws IOException {
         DrawRequest request = DrawRequest.newBuilder()
                 .setEventId(eventId)
                 .setCount(count)
+                .setDryRun(dryRun)
                 .build();
         DrawResponse response = call(() -> stub.draw(request));
         return response.getWinnersList().stream()

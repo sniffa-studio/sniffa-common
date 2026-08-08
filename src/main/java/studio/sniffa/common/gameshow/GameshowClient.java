@@ -20,7 +20,16 @@ public interface GameshowClient {
     EntryOutcome submitEntry(String eventId, long discordUserId, String discordTag,
                               String ignUsername, String discordNameTyped) throws IOException, InterruptedException;
 
-    List<Winner> draw(String eventId, int count) throws IOException, InterruptedException;
+    default List<Winner> draw(String eventId, int count) throws IOException, InterruptedException {
+        return draw(eventId, count, false);
+    }
+
+    /**
+     * {@code dryRun=true} samples winners the same way but doesn't mark entries drawn or remove
+     * them from the pool - lets staff test the draw/announcement flow against real entries without
+     * it counting for the actual event.
+     */
+    List<Winner> draw(String eventId, int count, boolean dryRun) throws IOException, InterruptedException;
 
     List<Entry> listEntries(String eventId) throws IOException, InterruptedException;
 

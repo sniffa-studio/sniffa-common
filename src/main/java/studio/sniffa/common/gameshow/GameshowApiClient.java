@@ -64,8 +64,8 @@ public final class GameshowApiClient implements GameshowClient {
     }
 
     @Override
-    public List<Winner> draw(String eventId, int count) throws IOException, InterruptedException {
-        var body = http.newObject().put("count", count);
+    public List<Winner> draw(String eventId, int count, boolean dryRun) throws IOException, InterruptedException {
+        var body = http.newObject().put("count", count).put("dryRun", dryRun);
         HttpResponse<String> response = http.post("/api/v1/events/" + eventId + "/draw", body);
         SniffaHttpClient.ensureSuccess(response);
         return http.readValue(response, DrawResponse.class).winners();

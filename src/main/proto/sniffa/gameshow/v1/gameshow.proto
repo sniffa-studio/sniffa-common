@@ -60,6 +60,9 @@ message SubmitEntryResponse {
 message DrawRequest {
   string event_id = 1;
   int32 count = 2;
+  // If true, samples winners without marking entries drawn or removing them from the pool - for
+  // staff to test the draw flow/format against real entries without it counting for real.
+  bool dry_run = 3;
 }
 
 message Winner {
