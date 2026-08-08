@@ -1,5 +1,6 @@
 package studio.sniffa.common.gameshow;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import studio.sniffa.common.http.SniffaHttpClient;
 
 import java.io.IOException;
@@ -77,14 +78,14 @@ public final class GameshowApiClient implements GameshowClient {
     }
 
     @Override
-    public List<Winner> draw(String eventId, int count, boolean dryRun, Long guaranteedDiscordUserId, Integer guaranteedPosition)
+    public List<Winner> draw(String eventId, int count, boolean dryRun, List<GuaranteedPick> guaranteedPicks)
             throws IOException, InterruptedException {
         var body = http.newObject().put("count", count).put("dryRun", dryRun);
-        if (guaranteedDiscordUserId != null) {
-            body.put("guaranteedDiscordUserId", guaranteedDiscordUserId);
-        }
-        if (guaranteedPosition != null) {
-            body.put("guaranteedPosition", guaranteedPosition);
+        if (!guaranteedPicks.isEmpty()) {
+            ArrayNode array = body.putArray("guaranteedPicks");
+            for (GuaranteedPick pick : guaranteedPicks) {
+                array.addObject().put("discordUserId", pick.discordUserId()).put("position", pick.position());
+            }
         }
         HttpResponse<String> response = http.post("/api/v1/events/" + eventId + "/draw", body);
         SniffaHttpClient.ensureSuccess(response);

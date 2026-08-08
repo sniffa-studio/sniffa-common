@@ -66,17 +66,22 @@ message SubmitEntryResponse {
   EntryOutcomeStatus status = 1;
 }
 
+message GuaranteedPick {
+  int64 discord_user_id = 1;
+  // 1-based.
+  int32 position = 2;
+}
+
 message DrawRequest {
   string event_id = 1;
   int32 count = 2;
   // If true, samples winners without marking entries drawn or removing them from the pool - for
   // staff to test the draw flow/format against real entries without it counting for real.
   bool dry_run = 3;
-  // If set, this entrant is placed at guaranteed_position (1-based) instead of being randomly
-  // sampled - e.g. a content creator staff wants at a specific spot. Must be given together with
-  // guaranteed_position, and that entrant must already have an undrawn entry for the event.
-  optional int64 guaranteed_discord_user_id = 4;
-  optional int32 guaranteed_position = 5;
+  // Each entrant is placed at its own position instead of being randomly sampled - e.g. content
+  // creators staff wants at specific spots. Every entrant must already have an undrawn entry for
+  // the event; positions and discord_user_ids must each be distinct within this list.
+  repeated GuaranteedPick guaranteed_picks = 4;
 }
 
 message Winner {

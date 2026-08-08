@@ -29,9 +29,9 @@ import java.util.function.Supplier;
  * translates gRPC's unchecked {@link StatusRuntimeException} into the checked {@link IOException}
  * the interface already uses, so callers don't need transport-specific catch blocks.
  *
- * <p>The generated proto message classes {@code EventInfo}/{@code Entry}/{@code Winner} share
- * simple names with this package's own domain records, so they're referenced fully-qualified
- * below instead of imported.
+ * <p>The generated proto message classes {@code EventInfo}/{@code Entry}/{@code Winner}/
+ * {@code GuaranteedPick} share simple names with this package's own domain records, so they're
+ * referenced fully-qualified below instead of imported.
  */
 public final class GrpcGameshowClient implements GameshowClient, AutoCloseable {
 
@@ -104,17 +104,17 @@ public final class GrpcGameshowClient implements GameshowClient, AutoCloseable {
     }
 
     @Override
-    public List<Winner> draw(String eventId, int count, boolean dryRun, Long guaranteedDiscordUserId, Integer guaranteedPosition)
+    public List<Winner> draw(String eventId, int count, boolean dryRun, List<GuaranteedPick> guaranteedPicks)
             throws IOException {
         DrawRequest.Builder builder = DrawRequest.newBuilder()
                 .setEventId(eventId)
                 .setCount(count)
                 .setDryRun(dryRun);
-        if (guaranteedDiscordUserId != null) {
-            builder.setGuaranteedDiscordUserId(guaranteedDiscordUserId);
-        }
-        if (guaranteedPosition != null) {
-            builder.setGuaranteedPosition(guaranteedPosition);
+        for (GuaranteedPick pick : guaranteedPicks) {
+            builder.addGuaranteedPicks(studio.sniffa.common.gameshow.grpc.v1.GuaranteedPick.newBuilder()
+                    .setDiscordUserId(pick.discordUserId())
+                    .setPosition(pick.position())
+                    .build());
         }
         DrawRequest request = builder.build();
         DrawResponse response = call(() -> stub.draw(request));

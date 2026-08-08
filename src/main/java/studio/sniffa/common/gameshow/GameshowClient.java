@@ -33,17 +33,17 @@ public interface GameshowClient {
      * it counting for the actual event.
      */
     default List<Winner> draw(String eventId, int count, boolean dryRun) throws IOException, InterruptedException {
-        return draw(eventId, count, dryRun, null, null);
+        return draw(eventId, count, dryRun, List.of());
     }
 
     /**
-     * @param guaranteedDiscordUserId if not null, this entrant is placed at guaranteedPosition
-     *                                (1-based) instead of being randomly sampled - e.g. a content
-     *                                creator staff wants at a specific spot. Must be given together
-     *                                with guaranteedPosition, and that entrant must already have an
-     *                                undrawn entry for the event. The other slots are still random.
+     * @param guaranteedPicks entrants placed at their own fixed spots instead of being randomly
+     *                        sampled - e.g. content creators staff wants at specific spots. Every
+     *                        entrant must already have an undrawn entry for the event; positions
+     *                        and discord user IDs must each be distinct within the list. The
+     *                        remaining slots are still random.
      */
-    List<Winner> draw(String eventId, int count, boolean dryRun, Long guaranteedDiscordUserId, Integer guaranteedPosition)
+    List<Winner> draw(String eventId, int count, boolean dryRun, List<GuaranteedPick> guaranteedPicks)
             throws IOException, InterruptedException;
 
     List<Entry> listEntries(String eventId) throws IOException, InterruptedException;
