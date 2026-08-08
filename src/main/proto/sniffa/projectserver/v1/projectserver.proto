@@ -77,6 +77,8 @@ message ProjectServer {
   string server_type = 9;
   string version = 10;
   bool proxy = 11;
+  // Docker memory limit in MB. 0 means unset - no -m flag, itzg's own JVM heap defaults apply.
+  int32 memory_mb = 12;
 }
 
 message DiscoverServersResponse {
