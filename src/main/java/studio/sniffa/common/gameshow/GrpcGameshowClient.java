@@ -98,6 +98,7 @@ public final class GrpcGameshowClient implements GameshowClient, AutoCloseable {
         return switch (response.getStatus()) {
             case ENTRY_OUTCOME_STATUS_CREATED -> new EntryOutcome.Created();
             case ENTRY_OUTCOME_STATUS_ALREADY_JOINED -> new EntryOutcome.AlreadyJoined();
+            case ENTRY_OUTCOME_STATUS_CLOSED -> new EntryOutcome.Closed();
             default -> new EntryOutcome.Error("unexpected status: " + response.getStatus());
         };
     }

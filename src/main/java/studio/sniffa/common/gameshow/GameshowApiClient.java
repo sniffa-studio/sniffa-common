@@ -67,6 +67,9 @@ public final class GameshowApiClient implements GameshowClient {
         if (response.statusCode() == 409) {
             return new EntryOutcome.AlreadyJoined();
         }
+        if (response.statusCode() == 403) {
+            return new EntryOutcome.Closed();
+        }
         if (response.statusCode() / 100 != 2) {
             return new EntryOutcome.Error("backend returned " + response.statusCode());
         }

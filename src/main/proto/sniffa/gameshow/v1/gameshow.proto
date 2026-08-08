@@ -58,6 +58,8 @@ enum EntryOutcomeStatus {
   ENTRY_OUTCOME_STATUS_UNSPECIFIED = 0;
   ENTRY_OUTCOME_STATUS_CREATED = 1;
   ENTRY_OUTCOME_STATUS_ALREADY_JOINED = 2;
+  // Event has a closes_at deadline that's already passed - see GameshowEvent.closesAt.
+  ENTRY_OUTCOME_STATUS_CLOSED = 3;
 }
 
 message SubmitEntryResponse {
