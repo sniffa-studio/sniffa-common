@@ -1,6 +1,7 @@
 plugins {
     id("java-library")
     id("com.google.protobuf") version "0.9.5"
+    `maven-publish`
 }
 
 group = "studio.sniffa"
@@ -60,4 +61,22 @@ protobuf {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
+    }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/sniffa-studio/sniffa-common")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
 }

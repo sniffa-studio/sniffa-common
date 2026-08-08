@@ -18,25 +18,25 @@ jobs:
       - run: chmod +x gradlew
       - run: ./gradlew build --no-daemon
 
-  # Deploys the library *source* to the shared server, where sniffa-discord and
-  # sniffa-backend consume it as a Gradle composite build sibling
-  # (includeBuild("../sniffa-common")). No restart needed here - it only takes
-  # effect the next time one of those two repos deploys.
-  deploy:
+  # Publishes the built jar to GitHub Packages instead of rsyncing source to the server - the
+  # consumer repos (sniffa-backend, sniffa-discord, sniffa-proxy, sniffa-node-agent) pull it as a
+  # normal versioned Gradle dependency instead of a composite-build sibling checkout.
+  publish:
     needs: build
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
-      - name: Set up deploy key
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
-      - name: Sync source to server
-        run: |
-          rsync -az --delete \
-            --exclude='.git' --exclude='.gradle' --exclude='build' --exclude='.idea' \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
-            ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/sniffa-common/"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: chmod +x gradlew
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: ./gradlew publish --no-daemon
